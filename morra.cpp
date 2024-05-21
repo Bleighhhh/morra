@@ -1,101 +1,75 @@
 #include <iostream>
-#include <string>
+#include <cstdio>
 
-#ifdef _WIN32
-#include <conio.h>
-#else
-#include <termios.h>
-#include <unistd.h>
-#endif
-
-void ClearScreen() {
-#ifdef _WIN32
-    std::system("cls");
-#else
-    std::system("clear");
-#endif
-}
-
-char GetHiddenInput() {
-#ifdef _WIN32
-    return _getch();
-#else
-    struct termios oldt, newt;
-    char ch;
-    tcgetattr(STDIN_FILENO, &oldt);
-    newt = oldt;
-    newt.c_lflag &= ~(ICANON | ECHO);
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-    ch = getchar();
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-    return ch;
-#endif
-}
-
-int GetPlayerInput(int playerNumber) {
+// Funzione per ottenere l'input di un giocatore senza visualizzare l'input
+int getPlayerSecretInput(int playerNumber) {
     int num;
-    std::string input;
-    std::cout << "Player " << playerNumber << ", enter a number: ";
-    
-    // Get hidden input
-    char ch;
-    while (true) {
-        ch = GetHiddenInput();
-        if (ch == '\n' || ch == '\r') {
-            break;
+    std::cout << "Player " << playerNumber << ", enter a number between 1 and 5 (keep it secret): ";
+
+    char c;
+    int count = 0;
+    do {
+        c = std::getchar();
+        if (c >= '1' && c <= '5') {
+            std::cout << '*'; // Visualizza un asterisco al posto del numero inserito
+            num = c - '0'; // Converte il carattere ASCII in intero
+            count++;
         }
-        if (isdigit(ch)) {
-            input += ch;
-            std::cout << '*';  // Print asterisk instead of the actual character
-        }
-    }
-    
-    num = std::stoi(input);
-    std::cout << std::endl;
-    ClearScreen();
+    } while (count == 0); // Continua fino a quando non viene inserito un numero valido
+
+    std::cout << std::endl; // Vai a capo dopo aver terminato l'input
+    return num;
+}
+
+// Funzione per ottenere l'input di un giocatore
+int getPlayerInput(int playerNumber) {
+    int num;
+    std::cout << "Player " << playerNumber << ", guess the sum of both numbers: ";
+    std::cin >> num;
     return num;
 }
 
 int main() {
-    int player1Number, player2Number, player1Guess, player2Guess;
     int player1Score = 0, player2Score = 0;
+    const int winningScore = 3;
 
-    // Get numbers from both players
-    ClearScreen();
-    player1Number = GetPlayerInput(1);
+    // Inizio del gioco
+    while (player1Score < winningScore && player2Score < winningScore) {
+        int secretNumber1, secretNumber2, guess1, guess2;
 
-    ClearScreen();
-    player2Number = GetPlayerInput(2);
+        // Input dei numeri segreti dei giocatori
+        secretNumber1 = getPlayerSecretInput(1);
+        secretNumber2 = getPlayerSecretInput(2);
 
-    int sum = player1Number + player2Number;
+        // Input dei numeri dei giocatori per indovinare la somma
+        guess1 = getPlayerInput(1);
+        guess2 = getPlayerInput(2);
 
-    // Get guesses from both players
-    std::cout << "Player 1, guess the sum of both numbers: ";
-    std::cin >> player1Guess;
-    ClearScreen();
-    
-    std::cout << "Player 2, guess the sum of both numbers: ";
-    std::cin >> player2Guess;
-    ClearScreen();
+        // Verifica dei numeri indovinati
+        int actualSum = secretNumber1 + secretNumber2;
+        if (guess1 == actualSum && guess2 == actualSum) {
+            std::cout << "Both players guessed correctly. Continuing the game.\n";
+        } else if (guess1 != actualSum && guess2 != actualSum) {
+            std::cout << "Neither player guessed the sum correctly. Continuing the game.\n";
+        } else if (guess1 == actualSum && guess2 != actualSum) {
+            std::cout << "Player 1 wins this round!\n";
+            player1Score++;
+        } else {
+            std::cout << "Player 2 wins this round!\n";
+            player2Score++;
+        }
 
-    // Check guesses
-    bool player1Correct = (player1Guess == sum);
-    bool player2Correct = (player2Guess == sum);
-
-    if (player1Correct && !player2Correct) {
-        std::cout << "Player 1 wins!\n";
-        player1Score++;
-    } else if (!player1Correct && player2Correct) {
-        std::cout << "Player 2 wins!\n";
-        player2Score++;
-    } else if (player1Correct && player2Correct) {
-        std::cout << "It's a tie! Both players guessed correctly.\n";
-    } else {
-        std::cout << "No one guessed the sum correctly.\n";
+        // Stampa dei punteggi
+        std::cout << "Player 1 Score: " << player1Score << "\n";
+        std::cout << "Player 2 Score: " << player2Score << "\n";
     }
 
-    std::cout << "Player 1 Score: " << player1Score << "\n";
-    std::cout << "Player 2 Score: " << player2Score << "\n";
+    // Dichiarazione del vincitore
+    if (player1Score == winningScore) {
+        std::cout << "Player 1 is the overall winner!\n";
+    } else {
+        std::cout << "Player 2 is the overall winner!\n";
+    }
 
     return 0;
 }
