@@ -1,0 +1,17 @@
+
+1. ad ogni giocatore: che numero tiri?
+2. buffer loading the two numbers thrown by the two players; without showing them to each other
+3. calcolo somma e soluzione
+
+3. ad ogni giocatore, che numero indovini?
+4. buffer che raccoglie le informazione
+6. creazione buffer punteggio a entrambi
+5. calcolo: 
+	1. risposta giocatore A uguale o diversa dalla soluzione
+	2. // per giocatore B
+	3. hanno indovinato entrambi? si ricomincia
+	4. non ha indovinato nessuno? si ricomincia
+	5. ha indovinato qualcuno? punto a lui 
+
+6. aggiungere il punto 
+7. vittoria 
